@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata: 
+  name: wordpress-web-deployment
+  labels:
+    app: wordpress-web 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress-web
+  template:
+    metadata:
+      labels:
+        app: wordpress-web
+    spec:
+      containers:
+        - image: wordpress:4-php7.0
+          name: wordpress-web
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: wordpress-db-service
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-volume-secrets
+                  key: db-password
+          ports:
+              - containerPort: 80
+                name: wordpress-web
+          volumeMounts:
+            - name: wordpress-persistent-storage
+              mountPath: /var/www/html
+      volumes:
+        - name: wordpress-persistent-storage
+          persistentVolumeClaim:
+            claimName: web-volume-claim
+
+
+
+        

@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-my-sql
+  labels:
+    app: wordpress-my-sql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress-my-sql
+  template:
+    metadata:
+      labels:
+        app: wordpress-my-sql
+    spec:
+      containers:
+        - image: mysql:5.6
+          name: wordpress-my-sql
+          args:
+            - "--ignore-db-dir=lost+found"
+
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-volume-secrets
+                  key: db-password
+          ports:
+            - name: db-port
+              containerPort: 3306
+
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim: 
+            claimName: my-sql-volume-claim
+
